@@ -1,3 +1,5 @@
+use tokio::time::Instant;
+
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Id(pub u16);
 
@@ -29,15 +31,41 @@ impl Velocity {
     }
 }
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug)]
 pub struct Player {
     pub id: Id,
     pub position: Position,
     pub velocity: Velocity,
+
+    pub(crate) previous: Instant,
+    pub counter: u32,
 }
 
 impl Player {
-    fn to_be_bytes(&self) -> [u8; size_of::<Self>()] {
+    pub fn new(id: Id) -> Self {
+        Self {
+            id,
+            ..Self::default()
+        }
+    }
+    pub(crate) fn tick(&mut self) {
+        let now = Instant::now();
+        if self.counter >= 0 && self.id == 1 {
+            let elapsed = self.previous.elapsed();
+            println!(
+                "{} | player since last tick: {}",
+                self.id.0,
+                elapsed.as_millis()
+            );
+            self.counter = 0;
+        }
+
+        self.counter += 1;
+
+        self.previous = now;
+    }
+
+    fn to_be_bytes(&self) -> [u8; 8] {
         let id = self.id.0.to_be_bytes();
         let position = self.position.to_be_bytes();
         let velocity = self.velocity.to_be_bytes();
@@ -53,10 +81,22 @@ impl Player {
         ]
     }
 }
+impl Default for Player {
+    fn default() -> Self {
+        Self {
+            id: Id::default(),
+            position: Position::default(),
+            velocity: Velocity::default(),
+            previous: Instant::now(),
+            counter: 0,
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
-    use crate::frame::{Id, Player, Position, Velocity};
+    use crate::player::{Id, Player, Position, Velocity};
+    use tokio::time::Instant;
 
     #[test]
     fn byte_order() {
@@ -79,6 +119,8 @@ mod tests {
             id: Id(255),
             position: Position { x: 3847, y: 769 },
             velocity: Velocity { x: -10, y: 25 },
+            previous: Instant::now(),
+            counter: 0,
         };
 
         assert_eq!(

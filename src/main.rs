@@ -1,8 +1,12 @@
-mod frame;
+mod command;
+mod engine;
+mod player;
 
+use crate::engine::Engine;
 use std::net::{Ipv4Addr, SocketAddr};
 use tokio::io::{AsyncBufReadExt, BufReader, BufWriter};
 use tokio::net::{TcpListener, TcpStream};
+use tokio::runtime;
 
 struct Config {
     addr: Ipv4Addr,
@@ -12,7 +16,7 @@ struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            addr: Ipv4Addr::new(0, 0, 0, 0),
+            addr: Ipv4Addr::new(127, 0, 0, 1),
             port: 10001,
         }
     }
@@ -35,23 +39,32 @@ async fn handle_client_connection(mut stream: TcpStream, addr: SocketAddr) {
     }
 }
 
-#[tokio::main]
-async fn main() {
-    let config = Config::default();
-    let server = TcpListener::bind((config.addr, config.port)).await.unwrap();
+fn main() {
+    let rt = runtime::Builder::new_multi_thread()
+        .enable_io()
+        .enable_time()
+        .build()
+        .unwrap();
+    rt.block_on(async {
+        let config = Config::default();
+        let server = TcpListener::bind((config.addr, config.port)).await.unwrap();
 
-    loop {
-        let client = server.accept().await;
-        match client {
-            Ok((stream, addr)) => {
-                println!("Accepting new connection: {}", &addr);
-                tokio::spawn(async move { handle_client_connection(stream, addr).await });
-            }
-            Err(error) => {
-                eprintln!("Got an error: {error}")
+        let mut engine = Engine::default();
+        tokio::spawn(async move { engine.run().await });
+
+        loop {
+            let client = server.accept().await;
+            match client {
+                Ok((stream, addr)) => {
+                    println!("Accepting new connection: {}", &addr);
+                    tokio::spawn(async move { handle_client_connection(stream, addr).await });
+                }
+                Err(error) => {
+                    eprintln!("Got an error: {error}")
+                }
             }
         }
-    }
+    });
 }
 
 #[cfg(test)]
