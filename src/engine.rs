@@ -2,6 +2,8 @@ use crate::player::{Id, Player};
 use std::time::Duration;
 use tokio::time::Instant;
 
+pub const TPS: f32 = 20.0;
+
 pub struct Engine {
     pub tps: f32,
     players: Vec<Player>,
@@ -47,10 +49,30 @@ fn create_n_players(n: u16) -> Vec<Player> {
 impl Default for Engine {
     fn default() -> Self {
         Self {
-            tps: 20.0,
-            players: create_n_players(65535),
+            tps: TPS,
+            players: create_n_players(u16::MAX),
             previous: Instant::now(),
             lag: 0,
         }
     }
+}
+
+#[test]
+fn test() {
+    let mut engine = Engine::default();
+    let player = &engine.players[0];
+    println!("{:?}", player);
+    engine.tick();
+
+    let player = &engine.players[1];
+    println!("{:?}", player);
+    engine.tick();
+
+    let player = &engine.players[2];
+    println!("{:?}", player);
+    engine.tick();
+
+    let player = &engine.players[3];
+    println!("{:?}", player);
+    engine.tick();
 }
