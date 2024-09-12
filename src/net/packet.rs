@@ -45,18 +45,18 @@ impl Move {
 
 #[derive(Copy, Clone, Debug)]
 #[repr(u8)]
-pub enum Command {
+pub enum Packet {
     GetPlayer(GetPlayer) = 0x1,
     GetAllPlayers = 0x2,
     Move(Move) = 0x3,
 }
 
-impl Command {
+impl Packet {
     pub fn to_bytes(&self) -> Vec<u8> {
         match self {
-            Command::GetPlayer(_) => todo!(),
-            Command::GetAllPlayers => todo!(),
-            Command::Move(move_command) => {
+            Packet::GetPlayer(_) => todo!(),
+            Packet::GetAllPlayers => todo!(),
+            Packet::Move(move_command) => {
                 let bytes = move_command.as_bytes();
                 vec![0x3, bytes[0], bytes[1], bytes[2]]
             }
@@ -67,7 +67,7 @@ impl Command {
 #[cfg(test)]
 mod tests {
     mod byte_order {
-        use crate::net::command::Move;
+        use crate::net::packet::Move;
         use crate::player::Id;
 
         #[test]

@@ -1,6 +1,6 @@
-use lib::server::Server;
 use tokio::io::{AsyncBufReadExt, AsyncReadExt};
 use tokio::runtime;
+use lib::net::server::Server;
 
 fn main() {
     let rt = runtime::Builder::new_multi_thread()

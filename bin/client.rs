@@ -1,7 +1,7 @@
 use console::Term;
 use lib::config::Config;
-use lib::net::command::{Command, Move};
-use lib::net::connection::Connection;
+use lib::net::client::Client;
+use lib::net::packet::{Move, Packet};
 use lib::player::Id;
 use std::time::Duration;
 use tokio::time::sleep;
@@ -9,7 +9,7 @@ use tokio::time::sleep;
 #[tokio::main]
 async fn main() {
     let config = Config::new();
-    let mut connection = Connection::new(&config).await;
+    let mut connection = Client::new(&config).await;
 
     let term = Term::stdout();
     loop {
@@ -25,7 +25,7 @@ async fn main() {
             _ => {}
         };
 
-        let command = Command::Move(Move {
+        let command = Packet::Move(Move {
             id: Id(5),
             up,
             down,

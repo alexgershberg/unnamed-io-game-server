@@ -1,13 +1,13 @@
 use crate::config::Config;
 use crate::engine::Engine;
-use crate::net::command::{Command, Move};
+use crate::net::packet::{Move, Packet};
 use std::io::Error;
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, BufReader, BufWriter};
 use tokio::net::tcp::ReadHalf;
 use tokio::net::{TcpListener, TcpStream};
 
-async fn read_command(reader: &mut BufReader<ReadHalf<'_>>) -> Result<Command, Error> {
+async fn read_command(reader: &mut BufReader<ReadHalf<'_>>) -> Result<Packet, Error> {
     let header = reader.read_u8().await?;
     match header {
         0x3 => {
@@ -15,7 +15,7 @@ async fn read_command(reader: &mut BufReader<ReadHalf<'_>>) -> Result<Command, E
             let id_1 = reader.read_u8().await?;
             let dir = reader.read_u8().await?;
 
-            Ok(Command::Move(Move::from_bytes([id_0, id_1, dir])))
+            Ok(Packet::Move(Move::from_bytes([id_0, id_1, dir])))
         }
         _ => todo!("Got header: {header}"),
     }
