@@ -1,43 +1,6 @@
-mod command;
-mod engine;
-mod player;
-
-use crate::engine::Engine;
-use std::net::{Ipv4Addr, SocketAddr};
-use tokio::io::{AsyncBufReadExt, BufReader, BufWriter};
-use tokio::net::{TcpListener, TcpStream};
+use lib::server::Server;
+use tokio::io::{AsyncBufReadExt, AsyncReadExt};
 use tokio::runtime;
-
-struct Config {
-    addr: Ipv4Addr,
-    port: u16,
-}
-
-impl Default for Config {
-    fn default() -> Self {
-        Self {
-            addr: Ipv4Addr::new(127, 0, 0, 1),
-            port: 10001,
-        }
-    }
-}
-
-async fn handle_client_connection(mut stream: TcpStream, addr: SocketAddr) {
-    let (rd, wr) = stream.split();
-    let mut reader = BufReader::new(rd);
-    let mut writer = BufWriter::new(wr);
-
-    loop {
-        let mut line = String::new();
-        let n = reader.read_line(&mut line).await.unwrap();
-
-        if n == 0 {
-            eprintln!("n was 0");
-            break;
-        }
-        println!("[{addr}]: {line:#?}")
-    }
-}
 
 fn main() {
     let rt = runtime::Builder::new_multi_thread()
@@ -46,34 +9,16 @@ fn main() {
         .build()
         .unwrap();
     rt.block_on(async {
-        let config = Config::default();
-        let server = TcpListener::bind((config.addr, config.port)).await.unwrap();
-
-        let mut engine = Engine::default();
-        tokio::spawn(async move { engine.run().await });
-
-        loop {
-            let client = server.accept().await;
-            match client {
-                Ok((stream, addr)) => {
-                    println!("Accepting new connection: {}", &addr);
-                    tokio::spawn(async move { handle_client_connection(stream, addr).await });
-                }
-                Err(error) => {
-                    eprintln!("Got an error: {error}")
-                }
-            }
-        }
+        let server = Server;
+        server.run().await;
     });
 }
 
 #[cfg(test)]
 mod tests {
     use futures::sink::SinkExt;
-    use tokio_util::bytes::{BufMut, Bytes, BytesMut};
-    use tokio_util::codec::{
-        AnyDelimiterCodec, Decoder, FramedRead, FramedWrite, LengthDelimitedCodec, LinesCodec,
-    };
+    use tokio_util::bytes::{BufMut, BytesMut};
+    use tokio_util::codec::{AnyDelimiterCodec, Decoder, FramedWrite};
 
     #[tokio::test]
     async fn test() {

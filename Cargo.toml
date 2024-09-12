@@ -3,7 +3,21 @@ name = "unnamed-io-game-server"
 version = "0.1.0"
 edition = "2021"
 
+[lib]
+name = "lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
+
+[[bin]]
+name = "client"
+path = "bin/client.rs"
+
+
 [dependencies]
 tokio = { version = "1.40.0", features = ["rt-multi-thread", "macros", "net", "io-util", "time"] }
 tokio-util = { version = "0.7.12" , features = ["codec"] }
 futures = "0.3.30"
+console = "0.15.8"

@@ -1,4 +1,7 @@
+use crate::entity::Entity;
+use crate::physics::{Acceleration, Velocity};
 use crate::player::{Id, Player};
+use std::thread;
 use std::time::Duration;
 use tokio::time::Instant;
 
@@ -7,6 +10,7 @@ pub const TPS: f32 = 20.0;
 pub struct Engine {
     pub tps: f32,
     players: Vec<Player>,
+    entities: Vec<Entity>,
 
     previous: Instant,
     lag: u128,
@@ -32,16 +36,22 @@ impl Engine {
     }
 
     fn tick(&mut self) {
-        for player in &mut self.players {
-            player.tick()
+        for player in self.players.iter_mut() {
+            player.tick();
+        }
+
+        for entity in self.entities.iter_mut() {
+            entity.tick()
         }
     }
+
+    fn input(&self) {}
 }
 
-fn create_n_players(n: u16) -> Vec<Player> {
+fn create_n_entities(n: u16) -> Vec<Entity> {
     let mut output = vec![];
     for i in 0..n {
-        output.push(Player::new(Id(i)))
+        output.push(Entity::new(Id(i)))
     }
     output
 }
@@ -50,7 +60,8 @@ impl Default for Engine {
     fn default() -> Self {
         Self {
             tps: TPS,
-            players: create_n_players(u16::MAX),
+            players: vec![Default::default()],
+            entities: create_n_entities(u16::MAX),
             previous: Instant::now(),
             lag: 0,
         }
@@ -60,19 +71,40 @@ impl Default for Engine {
 #[test]
 fn test() {
     let mut engine = Engine::default();
-    let player = &engine.players[0];
-    println!("{:?}", player);
-    engine.tick();
+    let player = &mut engine.players[0];
+    player.velocity = Velocity {
+        x: 0.0,
+        y: 0.0,
+        max_x: 10.0,
+        max_y: 10.0,
+    };
+    player.acceleration = Acceleration { x: 1, y: 0 };
 
-    let player = &engine.players[1];
-    println!("{:?}", player);
-    engine.tick();
+    let tick = |engine: &mut Engine| {
+        engine.tick();
+        let player = &mut engine.players[0];
+        println!(
+            "||   {:7.prec$} | {:7.prec$}   ||   {:7.prec$} | {:7.prec$}   ||   {:2} | {:2}   ||",
+            player.position.x,
+            player.position.y,
+            player.velocity.x,
+            player.velocity.y,
+            player.acceleration.x,
+            player.acceleration.y,
+            prec = 4,
+        );
+    };
 
-    let player = &engine.players[2];
-    println!("{:?}", player);
-    engine.tick();
+    let steps = 20;
+    for _ in 0..steps {
+        tick(&mut engine);
+        thread::sleep(Duration::from_millis((1000.0 / TPS) as u64))
+    }
 
-    let player = &engine.players[3];
-    println!("{:?}", player);
-    engine.tick();
+    let player = &mut engine.players[0];
+    player.acceleration = Acceleration { x: -1, y: -1 };
+    for _ in 0..steps {
+        tick(&mut engine);
+        thread::sleep(Duration::from_millis((1000.0 / TPS) as u64))
+    }
 }
