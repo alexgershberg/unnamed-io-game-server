@@ -25,7 +25,12 @@ impl Move {
         [id[0], id[1], byte]
     }
 
-    pub fn from_bytes(bytes: [u8; 3]) -> Self {
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+        let packet_length = 3;
+        if bytes.len() != packet_length {
+            return None;
+        }
+
         let id = Id(u16::from_be_bytes([bytes[0], bytes[1]]));
 
         let dir = bytes[2];
@@ -33,19 +38,20 @@ impl Move {
         let down = (dir & 0b0100) == 0b0100;
         let left = (dir & 0b0010) == 0b0010;
         let right = (dir & 0b0001) == 0b0001;
-        Self {
+        Some(Self {
             id,
             up,
             down,
             left,
             right,
-        }
+        })
     }
 }
 
 #[derive(Copy, Clone, Debug)]
 #[repr(u8)]
 pub enum Packet {
+    Ping = 0x0,
     GetPlayer(GetPlayer) = 0x1,
     GetAllPlayers = 0x2,
     Move(Move) = 0x3,
@@ -54,12 +60,31 @@ pub enum Packet {
 impl Packet {
     pub fn to_bytes(&self) -> Vec<u8> {
         match self {
+            Packet::Ping => vec![0x0],
             Packet::GetPlayer(_) => todo!(),
-            Packet::GetAllPlayers => todo!(),
+            Packet::GetAllPlayers => vec![0x2],
             Packet::Move(move_command) => {
                 let bytes = move_command.as_bytes();
                 vec![0x3, bytes[0], bytes[1], bytes[2]]
             }
+        }
+    }
+
+    pub fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
+        if bytes.is_empty() {
+            return None;
+        }
+
+        let header = bytes[0];
+        match header {
+            0x0 => Some(Packet::Ping),
+            0x1 => todo!(),
+            0x2 => Some(Packet::GetAllPlayers),
+            0x3 => {
+                let move_packet = Move::from_bytes(&bytes[1..])?;
+                Some(Packet::Move(move_packet))
+            }
+            _ => todo!("Unknown packet header: {header}"),
         }
     }
 }

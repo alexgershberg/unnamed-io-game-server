@@ -1,11 +1,11 @@
 use crate::config::Config;
 use crate::engine::Engine;
-use crate::net::packet::{Move, Packet};
+use crate::net::packet::Packet;
 use std::io::Error;
 use std::net::SocketAddr;
 use tokio::io::{AsyncReadExt, BufReader, BufWriter};
 use tokio::net::tcp::{ReadHalf, WriteHalf};
-use tokio::net::{TcpListener, TcpStream};
+use tokio::net::{TcpStream, UdpSocket};
 
 struct Connection<'a> {
     addr: SocketAddr,
@@ -33,7 +33,8 @@ impl<'a> Connection<'a> {
                 let id_1 = self.reader.read_u8().await?;
                 let dir = self.reader.read_u8().await?;
 
-                Ok(Packet::Move(Move::from_bytes([id_0, id_1, dir])))
+                // Ok(Packet::Move(Move::from_bytes([id_0, id_1, dir])))
+                todo!()
             }
             _ => todo!("Got header: {header}"),
         }
@@ -55,8 +56,12 @@ async fn handle_client_connection(mut stream: TcpStream, addr: SocketAddr) {
     }
 }
 
+async fn handle_packet(packet: Packet, addr: SocketAddr) {
+    println!("[{addr}]: {packet:?}")
+}
+
 pub struct Server {
-    listener: TcpListener,
+    socket: UdpSocket,
 }
 
 impl Server {
@@ -65,8 +70,9 @@ impl Server {
     }
 
     pub async fn from_config(config: Config) -> Self {
-        let listener = TcpListener::bind((config.addr, config.port)).await.unwrap();
-        Self { listener }
+        let socket = UdpSocket::bind(config.addr).await.unwrap();
+        println!("Creating socket: {socket:?}");
+        Self { socket }
     }
 
     pub async fn run(&self) {
@@ -74,15 +80,21 @@ impl Server {
         tokio::spawn(async move { engine.run().await });
 
         loop {
-            let client = self.listener.accept().await;
-            match client {
-                Ok((stream, addr)) => {
-                    println!("[{addr}]: Accepting new connection");
-                    tokio::spawn(async move { handle_client_connection(stream, addr).await });
+            let mut buf = [0; 64];
+            let (n, origin) = match self.socket.recv_from(&mut buf).await {
+                Ok((n, addr)) => (n, addr),
+                Err(e) => {
+                    println!("Got error: {e}");
+                    continue;
                 }
-                Err(error) => {
-                    eprintln!("Got an error: {error}")
-                }
+            };
+
+            let buf = &buf[..n];
+            println!("n: {n} | origin: {origin:?} | buf: {buf:?}");
+            let packet = Packet::from_bytes(buf.to_vec());
+            println!("packet: {packet:?}");
+            if let Some(packet) = packet {
+                handle_packet(packet, origin);
             }
         }
     }

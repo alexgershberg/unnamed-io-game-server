@@ -1,47 +1,46 @@
+use console::Term;
 use lib::config::Config;
 use lib::net::client::Client;
 use lib::net::packet::{Move, Packet};
 use lib::player::Id;
-use std::time::Duration;
-use tokio::time::sleep;
 
 #[tokio::main]
 async fn main() {
-    let mut handles = vec![];
-    for id in 1..1000 {
-        println!("id: {id}");
-        let handle = tokio::spawn(async move {
-            let mut connection = Client::new(Config::new()).await;
-            loop {
-                let (up, down, left, right) = (false, false, false, false);
+    let term = Term::stdout();
+    let id = 9;
+    let mut client = Client::new(Config {
+        addr: "127.0.0.1:10001".parse().unwrap(),
+    })
+    .await;
 
-                // let char = term.read_char().unwrap();
-                //
-                // match char {
-                //     'w' => up = true,
-                //     's' => down = true,
-                //     'a' => left = true,
-                //     'd' => right = true,
-                //     _ => {}
-                // };
+    loop {
+        let char = term.read_char().unwrap();
+        let (mut up, mut down, mut left, mut right) = (false, false, false, false);
+        let mut get_all_players = false;
+        match char {
+            'w' => up = true,
+            's' => down = true,
+            'a' => left = true,
+            'd' => right = true,
+            'p' => get_all_players = true,
+            _ => {}
+        };
 
-                let command = Packet::Move(Move {
-                    id: Id(id as u16),
-                    up,
-                    down,
-                    left,
-                    right,
-                });
+        let mut packet = Packet::Ping;
 
-                connection.send_command(command).await;
-                sleep(Duration::from_millis(10 * id)).await;
-            }
-        });
+        if get_all_players {
+            packet = Packet::GetAllPlayers;
+        }
+        if up || down || left || right {
+            packet = Packet::Move(Move {
+                id: Id(id as u16),
+                up,
+                down,
+                left,
+                right,
+            });
+        }
 
-        handles.push(handle);
-    }
-
-    for handle in handles {
-        handle.await.unwrap()
+        client.send_packet(packet).await;
     }
 }

@@ -1,53 +1,11 @@
+use lib::config::Config;
 use lib::net::server::Server;
-use tokio::runtime;
 
-fn main() {
-    let rt = runtime::Builder::new_multi_thread()
-        .enable_io()
-        .enable_time()
-        .build()
-        .unwrap();
-    rt.block_on(async {
-        let server = Server::new().await;
-        server.run().await;
-    });
-}
-
-#[cfg(test)]
-mod tests {
-    use futures::sink::SinkExt;
-    use tokio_util::bytes::{BufMut, BytesMut};
-    use tokio_util::codec::{AnyDelimiterCodec, Decoder, FramedWrite};
-
-    #[tokio::test]
-    async fn test() {
-        let buffer = Vec::new();
-        let messages = ["Hello", "World"];
-        // let messages = vec![Bytes::from("Hello"), Bytes::from("World")];
-        // let encoder = LinesCodec::new();
-        let mut encoder = AnyDelimiterCodec::new(b"\r\n".to_vec(), b"\n\r\n".to_vec());
-        // let encoder = LengthDelimitedCodec::new();
-        // let mut reader = FramedRead::new(buffer.clone(), encoder);
-        let mut writer = FramedWrite::new(buffer.clone(), encoder.clone());
-        writer.send(messages[0]).await.unwrap();
-        writer.send(messages[1]).await.unwrap();
-        let buf = writer.get_ref();
-        let s = String::from_utf8(buf.clone()).unwrap();
-
-        println!("{s:?}");
-        println!("{buf:?}");
-
-        let mut bytes = BytesMut::new();
-        bytes.put_slice(b"hello\rworld\r\ne");
-        let res = encoder.decode(&mut bytes);
-        println!("{res:?}");
-        let res = encoder.decode(&mut bytes);
-        println!("{res:?}");
-        let res = encoder.decode(&mut bytes);
-        println!("{res:?}");
-        let res = encoder.decode(&mut bytes);
-        println!("{res:?}");
-        let res = encoder.decode(&mut bytes);
-        println!("{res:?}");
-    }
+#[tokio::main()]
+async fn main() {
+    let server = Server::from_config(Config {
+        addr: "127.0.0.1:10001".parse().unwrap(),
+    })
+    .await;
+    server.run().await;
 }

@@ -1,23 +1,34 @@
 use crate::config::Config;
 use crate::net::packet::Packet;
-use tokio::io::AsyncWriteExt;
-use tokio::net::TcpStream;
+use std::net::{Ipv4Addr, SocketAddr};
+use tokio::net::UdpSocket;
 
 pub struct Client {
-    pub stream: TcpStream,
+    pub socket: UdpSocket,
+    target: SocketAddr,
 }
 
 impl Client {
     pub async fn new(config: Config) -> Self {
-        let stream = match TcpStream::connect((config.addr, config.port)).await {
-            Ok(stream) => stream,
+        let socket = match UdpSocket::bind((Ipv4Addr::new(127, 0, 0, 1), 0)).await {
+            Ok(socket) => socket,
             Err(e) => panic!("Got error: {e}"),
         };
-        Self { stream }
+        println!("Created a socket: {socket:?}");
+
+        Self {
+            socket,
+            target: config.addr,
+        }
     }
 
-    pub async fn send_command(&mut self, command: Packet) {
-        let bytes = command.to_bytes();
-        self.stream.write_all(bytes.as_slice()).await.unwrap();
+    pub async fn send_packet(&mut self, packet: Packet) {
+        let bytes = packet.to_bytes();
+        let n = self
+            .socket
+            .send_to(bytes.as_slice(), self.target)
+            .await
+            .unwrap();
+        println!("Packet: {packet:?}");
     }
 }
