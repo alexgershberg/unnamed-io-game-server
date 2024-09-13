@@ -1,9 +1,9 @@
-use crate::entity::Entity;
-use crate::physics::{Acceleration, Velocity};
-use crate::player::{Id, Player};
 use std::thread;
+use crate::entity::Entity;
+use crate::player::{Id, Player};
 use std::time::Duration;
 use tokio::time::Instant;
+use crate::physics::{Acceleration, Velocity};
 
 pub const TPS: f32 = 20.0;
 

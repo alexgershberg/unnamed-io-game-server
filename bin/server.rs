@@ -1,6 +1,5 @@
-use tokio::io::{AsyncBufReadExt, AsyncReadExt};
-use tokio::runtime;
 use lib::net::server::Server;
+use tokio::runtime;
 
 fn main() {
     let rt = runtime::Builder::new_multi_thread()
@@ -9,7 +8,7 @@ fn main() {
         .build()
         .unwrap();
     rt.block_on(async {
-        let server = Server;
+        let server = Server::new().await;
         server.run().await;
     });
 }
@@ -23,15 +22,15 @@ mod tests {
     #[tokio::test]
     async fn test() {
         let buffer = Vec::new();
-        let messages = vec!["Hello", "World"];
+        let messages = ["Hello", "World"];
         // let messages = vec![Bytes::from("Hello"), Bytes::from("World")];
         // let encoder = LinesCodec::new();
         let mut encoder = AnyDelimiterCodec::new(b"\r\n".to_vec(), b"\n\r\n".to_vec());
         // let encoder = LengthDelimitedCodec::new();
         // let mut reader = FramedRead::new(buffer.clone(), encoder);
         let mut writer = FramedWrite::new(buffer.clone(), encoder.clone());
-        writer.send(messages[0].clone()).await.unwrap();
-        writer.send(messages[1].clone()).await.unwrap();
+        writer.send(messages[0]).await.unwrap();
+        writer.send(messages[1]).await.unwrap();
         let buf = writer.get_ref();
         let s = String::from_utf8(buf.clone()).unwrap();
 

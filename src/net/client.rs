@@ -8,10 +8,11 @@ pub struct Client {
 }
 
 impl Client {
-    pub async fn new(config: &Config) -> Self {
-        let stream = TcpStream::connect((config.addr, config.port))
-            .await
-            .unwrap();
+    pub async fn new(config: Config) -> Self {
+        let stream = match TcpStream::connect((config.addr, config.port)).await {
+            Ok(stream) => stream,
+            Err(e) => panic!("Got error: {e}"),
+        };
         Self { stream }
     }
 

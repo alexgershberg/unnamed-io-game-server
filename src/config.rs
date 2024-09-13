@@ -1,5 +1,6 @@
 use std::net::Ipv4Addr;
 
+#[derive(Clone, Copy, Debug)]
 pub struct Config {
     pub addr: Ipv4Addr,
     pub port: u16,
