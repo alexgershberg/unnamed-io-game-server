@@ -90,11 +90,9 @@ impl Server {
             };
 
             let buf = &buf[..n];
-            println!("n: {n} | origin: {origin:?} | buf: {buf:?}");
             let packet = Packet::from_bytes(buf.to_vec());
-            println!("packet: {packet:?}");
             if let Some(packet) = packet {
-                handle_packet(packet, origin);
+                handle_packet(packet, origin).await;
             }
         }
     }

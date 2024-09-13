@@ -1,7 +1,10 @@
 use console::Term;
 use lib::config::Config;
 use lib::net::client::Client;
-use lib::net::packet::{Move, Packet};
+use lib::net::packet::movement::Movement;
+use lib::net::packet::ping::Ping;
+use lib::net::packet::sync::Sync;
+use lib::net::packet::Packet;
 use lib::player::Id;
 
 #[tokio::main]
@@ -26,13 +29,13 @@ async fn main() {
             _ => {}
         };
 
-        let mut packet = Packet::Ping;
+        let mut packet = Packet::Ping(Ping);
 
         if get_all_players {
-            packet = Packet::GetAllPlayers;
+            packet = Packet::Sync(Sync);
         }
         if up || down || left || right {
-            packet = Packet::Move(Move {
+            packet = Packet::Movement(Movement {
                 id: Id(id as u16),
                 up,
                 down,
