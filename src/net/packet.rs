@@ -17,13 +17,13 @@ pub enum Packet {
 impl Packet {
     pub fn to_bytes(&self) -> Vec<u8> {
         match self {
-            Packet::Ping(ping) => ping.as_bytes(),
-            Packet::Sync(sync) => sync.as_bytes(),
-            Packet::Movement(movement) => movement.as_bytes().to_vec(),
+            Packet::Ping(ping) => ping.to_bytes(),
+            Packet::Sync(sync) => sync.to_bytes(),
+            Packet::Movement(movement) => movement.to_bytes().to_vec(),
         }
     }
 
-    pub fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
+    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
         if bytes.is_empty() {
             return None;
         }
@@ -53,7 +53,7 @@ mod tests {
                 left: false,
                 right: false,
             };
-            let byte = command.as_bytes();
+            let byte = command.to_bytes();
             assert_eq!(byte, [2, 0, 1, 0b1000]);
         }
     }

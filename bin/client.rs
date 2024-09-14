@@ -1,6 +1,7 @@
 use console::Term;
 use lib::config::Config;
 use lib::net::client::Client;
+use lib::net::frame::Frame;
 use lib::net::packet::movement::Movement;
 use lib::net::packet::ping::Ping;
 use lib::net::packet::sync::Sync;
@@ -44,6 +45,8 @@ async fn main() {
             });
         }
 
-        client.send_packet(packet).await;
+        let mut frame = Frame::new();
+        frame.packet = Some(packet);
+        client.send_frame(frame).await;
     }
 }

@@ -1,11 +1,12 @@
 use crate::config::Config;
-use crate::net::packet::Packet;
+use crate::net::frame::Frame;
 use std::net::{Ipv4Addr, SocketAddr};
 use tokio::net::UdpSocket;
 
 pub struct Client {
     pub socket: UdpSocket,
     target: SocketAddr,
+    sequence_number: u32,
 }
 
 impl Client {
@@ -19,16 +20,19 @@ impl Client {
         Self {
             socket,
             target: config.addr,
+            sequence_number: 0,
         }
     }
 
-    pub async fn send_packet(&mut self, packet: Packet) {
-        let bytes = packet.to_bytes();
+    pub async fn send_frame(&mut self, mut frame: Frame) {
+        frame.syn = self.sequence_number;
+        self.sequence_number = self.sequence_number.wrapping_add(1);
+        let bytes = frame.to_bytes();
         let n = self
             .socket
             .send_to(bytes.as_slice(), self.target)
             .await
             .unwrap();
-        println!("Packet: {packet:?}");
+        println!("Frame: {frame:?}");
     }
 }

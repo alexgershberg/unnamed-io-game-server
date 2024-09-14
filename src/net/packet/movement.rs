@@ -12,7 +12,7 @@ pub struct Movement {
 impl Movement {
     pub const PACKET_ID: u8 = 2;
 
-    pub fn as_bytes(&self) -> Vec<u8> {
+    pub fn to_bytes(&self) -> Vec<u8> {
         let up_flag: u8 = if self.up { 0b1000 } else { 0 };
         let down_flag: u8 = if self.down { 0b0100 } else { 0 };
         let left_flag: u8 = if self.left { 0b0010 } else { 0 };
