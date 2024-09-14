@@ -6,9 +6,11 @@ use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::UdpSocket;
+use tokio::sync::mpsc::Sender;
 
 pub struct Server {
     socket: UdpSocket,
+    pub tx: Option<Sender<i32>>,
 }
 
 impl Server {
@@ -19,7 +21,7 @@ impl Server {
     pub async fn from_config(config: Config) -> Self {
         let socket = UdpSocket::bind(config.addr).await.unwrap();
         println!("Creating socket: {socket:?}");
-        Self { socket }
+        Self { socket, tx: None }
     }
 
     pub async fn run(&self) {
@@ -34,6 +36,11 @@ impl Server {
                     continue;
                 }
             };
+
+            let p = origin.port();
+            if let Some(tx) = &self.tx {
+                tx.send(p as i32).await.unwrap();
+            }
 
             let connection = connections
                 .entry(origin)

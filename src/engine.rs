@@ -3,17 +3,20 @@ use crate::physics::{Acceleration, Velocity};
 use crate::player::{Id, Player};
 use std::thread;
 use std::time::Duration;
-use tokio::time::Instant;
+use tokio::sync::mpsc::Receiver;
+use tokio::time::{timeout, Instant};
 
 pub const TPS: f32 = 20.0;
 
 pub struct Engine {
     pub tps: f32,
-    players: Vec<Player>,
-    entities: Vec<Entity>,
+    pub players: Vec<Player>,
+    pub entities: Vec<Entity>,
 
-    previous: Instant,
-    lag: u128,
+    pub previous: Instant,
+    pub lag: u128,
+
+    pub rx: Option<Receiver<i32>>,
 }
 
 impl Engine {
@@ -23,6 +26,7 @@ impl Engine {
             let now = Instant::now();
             let elapsed = self.previous.elapsed();
 
+            self.input().await;
             self.lag += elapsed.as_millis();
             if self.lag >= ms_per_tick {
                 self.tick();
@@ -45,7 +49,15 @@ impl Engine {
         }
     }
 
-    fn input(&self) {}
+    async fn input(&mut self) {
+        if let Some(rx) = &mut self.rx {
+            if let Ok(val) = timeout(Duration::from_millis(1000), rx.recv()).await {
+                println!("[ENGINE]: Got val: {val:?}");
+            } else {
+                println!("[ENGINE]: receiver.recv timed out!");
+            }
+        }
+    }
 }
 
 fn create_n_entities(n: u16) -> Vec<Entity> {
@@ -64,6 +76,7 @@ impl Default for Engine {
             entities: create_n_entities(u16::MAX),
             previous: Instant::now(),
             lag: 0,
+            rx: None,
         }
     }
 }

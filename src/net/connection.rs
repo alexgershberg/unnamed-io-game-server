@@ -1,7 +1,7 @@
 use crate::net::frame::Frame;
 use std::net::SocketAddr;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Clone, Debug)]
 pub struct Connection {
     origin: SocketAddr,
     sequence_number: u32,
