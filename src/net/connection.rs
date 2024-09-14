@@ -20,11 +20,13 @@ impl Connection {
     pub async fn handle_frame(&mut self, frame: Frame) {
         let syn = frame.syn;
         if syn < self.acknowledgement_number {
-            println!("Drop frame: {frame:?}");
             return;
         }
 
         self.acknowledgement_number = syn + 1;
-        println!("[{}]: {frame:?} | {:?}", self.origin, self)
+        println!(
+            "[{}]: frame.syn: {} | frame.ack: {} | self.syn: {} | self.ack: {}",
+            self.origin, frame.syn, frame.ack, self.sequence_number, self.acknowledgement_number
+        )
     }
 }

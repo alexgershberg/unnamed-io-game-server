@@ -1,8 +1,10 @@
 use crate::config::Config;
 use crate::net::connection::Connection;
 use crate::net::frame::Frame;
+use futures::lock::Mutex;
 use std::collections::HashMap;
 use std::net::SocketAddr;
+use std::sync::Arc;
 use tokio::net::UdpSocket;
 
 pub struct Server {
@@ -21,7 +23,7 @@ impl Server {
     }
 
     pub async fn run(&self) {
-        let mut connections: HashMap<SocketAddr, Connection> = HashMap::new();
+        let mut connections: HashMap<SocketAddr, Arc<Mutex<Connection>>> = HashMap::new();
 
         loop {
             let mut buf = [0; 64];
@@ -33,12 +35,18 @@ impl Server {
                 }
             };
 
-            let connection = connections.entry(origin).or_insert(Connection::new(origin));
+            let connection = connections
+                .entry(origin)
+                .or_insert(Arc::new(Mutex::new(Connection::new(origin))));
 
             let buf = &buf[..n];
             let frame = Frame::from_bytes(buf);
             if let Some(frame) = frame {
-                connection.handle_frame(frame).await;
+                let connection = connection.clone();
+                tokio::spawn(async move {
+                    let mut lock = connection.lock().await;
+                    lock.handle_frame(frame).await;
+                });
             }
         }
     }
