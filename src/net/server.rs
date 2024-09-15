@@ -1,6 +1,7 @@
 use crate::config::Config;
 use crate::net::connection::Connection;
 use crate::net::frame::Frame;
+use crate::net::packet::Packet;
 use futures::lock::Mutex;
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -10,7 +11,7 @@ use tokio::sync::mpsc::Sender;
 
 pub struct Server {
     socket: UdpSocket,
-    pub tx: Option<Sender<i32>>,
+    pub engine_tx: Option<Arc<Sender<Packet>>>,
 }
 
 impl Server {
@@ -21,7 +22,10 @@ impl Server {
     pub async fn from_config(config: Config) -> Self {
         let socket = UdpSocket::bind(config.addr).await.unwrap();
         println!("Creating socket: {socket:?}");
-        Self { socket, tx: None }
+        Self {
+            socket,
+            engine_tx: None,
+        }
     }
 
     pub async fn run(&self) {
@@ -37,14 +41,12 @@ impl Server {
                 }
             };
 
-            let p = origin.port();
-            if let Some(tx) = &self.tx {
-                tx.send(p as i32).await.unwrap();
-            }
-
-            let connection = connections
-                .entry(origin)
-                .or_insert(Arc::new(Mutex::new(Connection::new(origin))));
+            let connection = connections.entry(origin).or_insert({
+                let mut connection = Connection::new(origin);
+                connection.engine_tx = self.engine_tx.clone();
+                let connection = Arc::new(Mutex::new(connection));
+                connection
+            });
 
             let buf = &buf[..n];
             let frame = Frame::from_bytes(buf);

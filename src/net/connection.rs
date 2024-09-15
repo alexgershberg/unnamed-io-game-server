@@ -1,11 +1,15 @@
 use crate::net::frame::Frame;
+use crate::net::packet::Packet;
 use std::net::SocketAddr;
+use std::sync::Arc;
+use tokio::sync::mpsc::Sender;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Connection {
     origin: SocketAddr,
     sequence_number: u32,
     acknowledgement_number: u32,
+    pub engine_tx: Option<Arc<Sender<Packet>>>,
 }
 
 impl Connection {
@@ -14,10 +18,15 @@ impl Connection {
             origin,
             sequence_number: 0,
             acknowledgement_number: 0,
+            engine_tx: None,
         }
     }
 
     pub async fn handle_frame(&mut self, frame: Frame) {
+        let Some(tx) = &mut self.engine_tx else {
+            return;
+        };
+
         let syn = frame.syn;
         if syn < self.acknowledgement_number {
             return;
@@ -27,6 +36,10 @@ impl Connection {
         println!(
             "[{}]: frame.syn: {} | frame.ack: {} | self.syn: {} | self.ack: {}",
             self.origin, frame.syn, frame.ack, self.sequence_number, self.acknowledgement_number
-        )
+        );
+
+        if let Some(packet) = frame.packet {
+            tx.send(packet).await.unwrap();
+        }
     }
 }

@@ -1,4 +1,5 @@
 use crate::entity::Entity;
+use crate::net::packet::Packet;
 use crate::physics::{Acceleration, Velocity};
 use crate::player::{Id, Player};
 use std::thread;
@@ -16,7 +17,7 @@ pub struct Engine {
     pub previous: Instant,
     pub lag: u128,
 
-    pub rx: Option<Receiver<i32>>,
+    pub server_rx: Option<Receiver<Packet>>,
 }
 
 impl Engine {
@@ -50,7 +51,7 @@ impl Engine {
     }
 
     async fn input(&mut self) {
-        if let Some(rx) = &mut self.rx {
+        if let Some(rx) = &mut self.server_rx {
             if let Ok(val) = timeout(Duration::from_millis(1000), rx.recv()).await {
                 println!("[ENGINE]: Got val: {val:?}");
             } else {
@@ -76,7 +77,7 @@ impl Default for Engine {
             entities: create_n_entities(u16::MAX),
             previous: Instant::now(),
             lag: 0,
-            rx: None,
+            server_rx: None,
         }
     }
 }
