@@ -41,8 +41,8 @@ impl Packet {
 #[cfg(test)]
 mod tests {
     mod byte_order {
-        use crate::net::packet::movement::Movement;
-        use crate::player::Id;
+        use crate::packet::movement::Movement;
+        use common::id::Id;
 
         #[test]
         fn move_command_byte_order() {
