@@ -1,7 +1,8 @@
 use crate::entity::Entity;
 use crate::net::packet::Packet;
 use crate::physics::{Acceleration, Velocity};
-use crate::player::{Id, Player};
+use crate::player::{Id, KeyboardInput, Player};
+use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;
 use tokio::sync::mpsc::Receiver;
@@ -11,7 +12,7 @@ pub const TPS: f32 = 20.0;
 
 pub struct Engine {
     pub tps: f32,
-    pub players: Vec<Player>,
+    pub players: HashMap<Id, Player>,
     pub entities: Vec<Entity>,
 
     pub previous: Instant,
@@ -41,7 +42,7 @@ impl Engine {
     }
 
     fn tick(&mut self) {
-        for player in self.players.iter_mut() {
+        for (_id, player) in self.players.iter_mut() {
             player.tick();
         }
 
@@ -52,10 +53,23 @@ impl Engine {
 
     async fn input(&mut self) {
         if let Some(rx) = &mut self.server_rx {
-            if let Ok(val) = timeout(Duration::from_millis(1000), rx.recv()).await {
-                println!("[ENGINE]: Got val: {val:?}");
-            } else {
-                println!("[ENGINE]: receiver.recv timed out!");
+            if let Ok(Some(packet)) = timeout(Duration::from_millis(1), rx.recv()).await {
+                match packet {
+                    Packet::Ping(_) => {}
+                    Packet::Sync(_) => {}
+                    Packet::Movement(movement) => {
+                        let id = movement.id;
+                        let keyboard_input = KeyboardInput {
+                            up: movement.up,
+                            down: movement.down,
+                            left: movement.left,
+                            right: movement.right,
+                        };
+                        if let Some(player) = self.players.get_mut(&id) {
+                            player.input(keyboard_input)
+                        }
+                    }
+                }
             }
         }
     }
@@ -73,7 +87,16 @@ impl Default for Engine {
     fn default() -> Self {
         Self {
             tps: TPS,
-            players: vec![Default::default()],
+            players: {
+                let mut player = Player::default();
+                player.velocity = Velocity {
+                    x: 0.0,
+                    y: 0.0,
+                    max_x: 10.0,
+                    max_y: 10.0,
+                };
+                HashMap::from([(player.id, player)])
+            },
             entities: create_n_entities(u16::MAX),
             previous: Instant::now(),
             lag: 0,
@@ -85,7 +108,8 @@ impl Default for Engine {
 #[test]
 fn test() {
     let mut engine = Engine::default();
-    let player = &mut engine.players[0];
+    let id = Id(0);
+    let player = engine.players.get_mut(&id).unwrap();
     player.velocity = Velocity {
         x: 0.0,
         y: 0.0,
@@ -96,7 +120,7 @@ fn test() {
 
     let tick = |engine: &mut Engine| {
         engine.tick();
-        let player = &mut engine.players[0];
+        let player = engine.players.get_mut(&id).unwrap();
         println!(
             "||   {:7.prec$} | {:7.prec$}   ||   {:7.prec$} | {:7.prec$}   ||   {:2} | {:2}   ||",
             player.position.x,
@@ -115,7 +139,7 @@ fn test() {
         thread::sleep(Duration::from_millis((1000.0 / TPS) as u64))
     }
 
-    let player = &mut engine.players[0];
+    let player = engine.players.get_mut(&id).unwrap();
     player.acceleration = Acceleration { x: -1, y: -1 };
     for _ in 0..steps {
         tick(&mut engine);

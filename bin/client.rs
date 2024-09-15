@@ -11,7 +11,7 @@ use lib::player::Id;
 #[tokio::main]
 async fn main() {
     let term = Term::stdout();
-    let id = 1;
+    let id = 0;
     let mut client = Client::new(Config {
         addr: "127.0.0.1:10001".parse().unwrap(),
     })

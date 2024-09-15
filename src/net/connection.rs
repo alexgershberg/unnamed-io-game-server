@@ -33,10 +33,6 @@ impl Connection {
         }
 
         self.acknowledgement_number = syn + 1;
-        println!(
-            "[{}]: frame.syn: {} | frame.ack: {} | self.syn: {} | self.ack: {}",
-            self.origin, frame.syn, frame.ack, self.sequence_number, self.acknowledgement_number
-        );
 
         if let Some(packet) = frame.packet {
             tx.send(packet).await.unwrap();

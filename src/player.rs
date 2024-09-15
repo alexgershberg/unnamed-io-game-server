@@ -8,7 +8,7 @@ pub struct KeyboardInput {
     pub right: bool,
 }
 
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
 pub struct Id(pub u16);
 impl Id {
     pub fn as_bytes(&self) -> [u8; size_of::<Id>()] {
@@ -49,6 +49,7 @@ impl Player {
     }
 
     pub fn tick(&mut self) {
+        println!("[ENGINE]: {:#?}", self);
         self.update_position();
     }
 
@@ -64,19 +65,19 @@ impl Player {
         self.acceleration.y = 0;
 
         if up {
-            self.acceleration.y += 1;
+            self.acceleration.y += 10;
         }
 
         if down {
-            self.acceleration.y -= 1;
+            self.acceleration.y -= 10;
         }
 
         if left {
-            self.acceleration.x -= 1;
+            self.acceleration.x -= 10;
         }
 
         if right {
-            self.acceleration.x += 1;
+            self.acceleration.x += 10;
         }
     }
 
