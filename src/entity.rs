@@ -1,6 +1,6 @@
+use wasm_net::id::Id;
 use crate::physics::Velocity;
 use crate::player::Position;
-use net::id::Id;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Entity {

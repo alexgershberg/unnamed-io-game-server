@@ -139,14 +139,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "net"
-version = "0.1.0"
-dependencies = [
- "tokio-util",
- "wasm-bindgen",
-]
-
-[[package]]
 name = "object"
 version = "0.36.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -269,9 +261,9 @@ name = "unnamed-io-game-server"
 version = "0.1.0"
 dependencies = [
  "console",
- "net",
  "tokio",
  "tokio-util",
+ "wasm-net",
 ]
 
 [[package]]
@@ -334,6 +326,14 @@ name = "wasm-bindgen-shared"
 version = "0.2.93"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c62a0a307cb4a311d3a07867860911ca130c3494e8c2719593806c08bc5d0484"
+
+[[package]]
+name = "wasm-net"
+version = "0.1.0"
+dependencies = [
+ "tokio-util",
+ "wasm-bindgen",
+]
 
 [[package]]
 name = "windows-sys"

@@ -1,12 +1,12 @@
 use crate::entity::Entity;
 use crate::physics::Velocity;
 use crate::player::{KeyboardInput, Player};
-use net::id::Id;
-use net::packet::Packet;
 use std::collections::HashMap;
 use std::time::Duration;
 use tokio::sync::mpsc::Receiver;
 use tokio::time::{timeout, Instant};
+use wasm_net::id::Id;
+use wasm_net::packet::Packet;
 
 pub const TPS: f32 = 20.0;
 
@@ -109,9 +109,9 @@ impl Default for Engine {
 mod tests {
     use crate::engine::{Engine, TPS};
     use crate::physics::{Acceleration, Velocity};
-    use net::id::Id;
     use std::thread;
     use std::time::Duration;
+    use wasm_net::id::Id;
 
     #[test]
     fn test() {

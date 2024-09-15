@@ -16,10 +16,10 @@ name = "client"
 path = "bin/client.rs"
 
 [workspace]
-members = ["net"]
+members = ["wasm-net"]
 
 [dependencies]
-net = { path = "net" }
+wasm-net = { path = "wasm-net" }
 tokio = { version = "1.40.0", features = ["rt-multi-thread", "macros", "net", "io-util", "time", "sync"] }
 tokio-util = { version = "0.7.12" , features = ["codec"] }
 console = "0.15.8"

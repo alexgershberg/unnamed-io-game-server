@@ -1,13 +1,13 @@
 use lib::config::Config;
 use lib::engine::Engine;
-use net::frame::Frame;
-use net::packet::Packet;
 use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::UdpSocket;
 use tokio::sync::mpsc::{channel, Sender};
 use tokio::sync::Mutex;
+use wasm_net::frame::Frame;
+use wasm_net::packet::Packet;
 
 #[derive(Debug)]
 pub struct Connection {

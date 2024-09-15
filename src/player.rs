@@ -1,6 +1,6 @@
+use wasm_net::id::Id;
 use crate::engine::TPS;
 use crate::physics::{Acceleration, Velocity};
-use net::id::Id;
 
 pub struct KeyboardInput {
     pub up: bool,
