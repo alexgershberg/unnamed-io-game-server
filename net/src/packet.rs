@@ -1,24 +1,19 @@
 use crate::packet::movement::Movement;
 use crate::packet::ping::Ping;
 use crate::packet::sync::Sync;
-use serde::{Deserialize, Serialize};
-use tsify_next::Tsify;
-use wasm_bindgen::prelude::wasm_bindgen;
 
 pub mod movement;
 pub mod ping;
 pub mod sync;
 
-#[derive(Copy, Clone, Debug, Tsify, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug)]
 #[repr(u8)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum Packet {
     Ping(Ping) = 0,
     Sync(Sync) = 1,
     Movement(Movement) = 2,
 }
 
-#[wasm_bindgen]
 impl Packet {
     pub fn to_bytes(&self) -> Vec<u8> {
         match self {
@@ -35,9 +30,11 @@ impl Packet {
 
         let packet_id = bytes[0];
         match packet_id {
-            Ping::PACKET_ID => Some(Packet::Ping(Ping)),
-            Sync::PACKET_ID => Some(Packet::Sync(Sync)),
-            Movement::PACKET_ID => Some(Packet::Movement(Movement::from_bytes(&bytes[1..])?)),
+            ping::PING_PACKET_ID => Some(Packet::Ping(Ping)),
+            sync::SYNC_PACKET_ID => Some(Packet::Sync(Sync)),
+            movement::MOVEMENT_PACKET_ID => {
+                Some(Packet::Movement(Movement::from_bytes(&bytes[1..])?))
+            }
             _ => todo!("Unknown packet id: {packet_id}"),
         }
     }
@@ -46,8 +43,8 @@ impl Packet {
 #[cfg(test)]
 mod tests {
     mod byte_order {
+        use crate::id::Id;
         use crate::packet::movement::Movement;
-        use common::id::Id;
 
         #[test]
         fn move_command_byte_order() {

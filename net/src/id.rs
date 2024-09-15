@@ -1,8 +1,7 @@
-use serde::{Deserialize, Serialize};
-use tsify_next::Tsify;
+use wasm_bindgen::prelude::wasm_bindgen;
 
-#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq, Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
+#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
+#[wasm_bindgen]
 pub struct Id(pub u16);
 impl Id {
     pub fn as_bytes(&self) -> [u8; size_of::<Id>()] {

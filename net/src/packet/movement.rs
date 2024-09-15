@@ -1,9 +1,8 @@
 use crate::id::Id;
-use serde::{Deserialize, Serialize};
-use tsify_next::Tsify;
+use wasm_bindgen::prelude::wasm_bindgen;
 
-#[derive(Copy, Clone, Debug, Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
+#[derive(Copy, Clone, Debug)]
+#[wasm_bindgen]
 pub struct Movement {
     pub id: Id,
     pub up: bool,
@@ -11,9 +10,20 @@ pub struct Movement {
     pub left: bool,
     pub right: bool,
 }
+pub const MOVEMENT_PACKET_ID: u8 = 2;
 
+#[wasm_bindgen]
 impl Movement {
-    pub const PACKET_ID: u8 = 2;
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Movement {
+        Movement {
+            id: Default::default(),
+            up: false,
+            down: false,
+            left: false,
+            right: false,
+        }
+    }
 
     pub fn to_bytes(&self) -> Vec<u8> {
         let up_flag: u8 = if self.up { 0b1000 } else { 0 };
@@ -24,14 +34,14 @@ impl Movement {
 
         let mut id = self.id.0.to_be_bytes().to_vec();
 
-        let mut output = vec![Self::PACKET_ID];
+        let mut output = vec![MOVEMENT_PACKET_ID];
         output.append(&mut id);
         output.push(flags);
 
         output
     }
 
-    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+    pub fn from_bytes(bytes: &[u8]) -> Option<Movement> {
         let packet_length = 3;
         if bytes.len() != packet_length {
             return None;

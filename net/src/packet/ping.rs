@@ -1,14 +1,14 @@
-use serde::{Deserialize, Serialize};
-use tsify_next::Tsify;
+use wasm_bindgen::prelude::wasm_bindgen;
 
-#[derive(Copy, Clone, Debug, Tsify, Serialize, Deserialize)]
-#[tsify(into_wasm_abi, from_wasm_abi)]
+#[derive(Copy, Clone, Debug)]
+#[wasm_bindgen]
 pub struct Ping;
 
-impl Ping {
-    pub const PACKET_ID: u8 = 0;
+pub const PING_PACKET_ID: u8 = 0;
 
+#[wasm_bindgen]
+impl Ping {
     pub fn to_bytes(&self) -> Vec<u8> {
-        vec![Self::PACKET_ID]
+        vec![PING_PACKET_ID]
     }
 }
