@@ -1,6 +1,6 @@
 use crate::engine::TPS;
 use crate::physics::{Acceleration, Velocity};
-use common::id::Id;
+use net::id::Id;
 
 pub struct KeyboardInput {
     pub up: bool,

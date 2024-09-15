@@ -1,10 +1,9 @@
 use crate::entity::Entity;
-use crate::physics::{Acceleration, Velocity};
+use crate::physics::Velocity;
 use crate::player::{KeyboardInput, Player};
-use common::id::Id;
+use net::id::Id;
 use net::packet::Packet;
 use std::collections::HashMap;
-use std::thread;
 use std::time::Duration;
 use tokio::sync::mpsc::Receiver;
 use tokio::time::{timeout, Instant};
@@ -106,23 +105,31 @@ impl Default for Engine {
     }
 }
 
-#[test]
-fn test() {
-    let mut engine = Engine::default();
-    let id = Id(0);
-    let player = engine.players.get_mut(&id).unwrap();
-    player.velocity = Velocity {
-        x: 0.0,
-        y: 0.0,
-        max_x: 10.0,
-        max_y: 10.0,
-    };
-    player.acceleration = Acceleration { x: 1, y: 0 };
+#[cfg(test)]
+mod tests {
+    use crate::engine::{Engine, TPS};
+    use crate::physics::{Acceleration, Velocity};
+    use net::id::Id;
+    use std::thread;
+    use std::time::Duration;
 
-    let tick = |engine: &mut Engine| {
-        engine.tick();
+    #[test]
+    fn test() {
+        let mut engine = Engine::default();
+        let id = Id(0);
         let player = engine.players.get_mut(&id).unwrap();
-        println!(
+        player.velocity = Velocity {
+            x: 0.0,
+            y: 0.0,
+            max_x: 10.0,
+            max_y: 10.0,
+        };
+        player.acceleration = Acceleration { x: 1, y: 0 };
+
+        let tick = |engine: &mut Engine| {
+            engine.tick();
+            let player = engine.players.get_mut(&id).unwrap();
+            println!(
             "||   {:7.prec$} | {:7.prec$}   ||   {:7.prec$} | {:7.prec$}   ||   {:2} | {:2}   ||",
             player.position.x,
             player.position.y,
@@ -132,18 +139,19 @@ fn test() {
             player.acceleration.y,
             prec = 4,
         );
-    };
+        };
 
-    let steps = 20;
-    for _ in 0..steps {
-        tick(&mut engine);
-        thread::sleep(Duration::from_millis((1000.0 / TPS) as u64))
-    }
+        let steps = 20;
+        for _ in 0..steps {
+            tick(&mut engine);
+            thread::sleep(Duration::from_millis((1000.0 / TPS) as u64))
+        }
 
-    let player = engine.players.get_mut(&id).unwrap();
-    player.acceleration = Acceleration { x: -1, y: -1 };
-    for _ in 0..steps {
-        tick(&mut engine);
-        thread::sleep(Duration::from_millis((1000.0 / TPS) as u64))
+        let player = engine.players.get_mut(&id).unwrap();
+        player.acceleration = Acceleration { x: -1, y: -1 };
+        for _ in 0..steps {
+            tick(&mut engine);
+            thread::sleep(Duration::from_millis((1000.0 / TPS) as u64))
+        }
     }
 }

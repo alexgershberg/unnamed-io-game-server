@@ -1,19 +1,24 @@
 use crate::packet::movement::Movement;
 use crate::packet::ping::Ping;
 use crate::packet::sync::Sync;
+use serde::{Deserialize, Serialize};
+use tsify_next::Tsify;
+use wasm_bindgen::prelude::wasm_bindgen;
 
 pub mod movement;
 pub mod ping;
 pub mod sync;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Tsify, Serialize, Deserialize)]
 #[repr(u8)]
+#[tsify(into_wasm_abi, from_wasm_abi)]
 pub enum Packet {
     Ping(Ping) = 0,
     Sync(Sync) = 1,
     Movement(Movement) = 2,
 }
 
+#[wasm_bindgen]
 impl Packet {
     pub fn to_bytes(&self) -> Vec<u8> {
         match self {
@@ -23,7 +28,7 @@ impl Packet {
         }
     }
 
-    pub fn from_bytes(bytes: &[u8]) -> Option<Self> {
+    pub fn from_bytes(bytes: &[u8]) -> Option<Packet> {
         if bytes.is_empty() {
             return None;
         }
