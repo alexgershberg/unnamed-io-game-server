@@ -1,5 +1,5 @@
-use crate::config::Config;
-use crate::net::frame::Frame;
+use crate::frame::Frame;
+use common::config::Config;
 use std::net::{Ipv4Addr, SocketAddr};
 use tokio::net::UdpSocket;
 

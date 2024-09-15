@@ -1,7 +1,7 @@
-use crate::config::Config;
-use crate::net::connection::Connection;
-use crate::net::frame::Frame;
-use crate::net::packet::Packet;
+use crate::connection::Connection;
+use crate::frame::Frame;
+use crate::packet::Packet;
+use common::config::Config;
 use futures::lock::Mutex;
 use std::collections::HashMap;
 use std::net::SocketAddr;

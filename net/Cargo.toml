@@ -1,0 +1,11 @@
+[package]
+name = "net"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+common = { path = "../common" }
+tokio = { version = "1.40.0", features = ["rt-multi-thread", "macros", "net", "io-util", "time", "sync"] }
+tokio-util = { version = "0.7.12" , features = ["codec"] }
+futures = "0.3.30"
+console = "0.15.8"

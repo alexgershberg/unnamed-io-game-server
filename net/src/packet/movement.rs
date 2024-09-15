@@ -1,4 +1,4 @@
-use crate::player::Id;
+use common::id::Id;
 
 #[derive(Copy, Clone, Debug)]
 pub struct Movement {

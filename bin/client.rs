@@ -1,12 +1,12 @@
+use common::config::Config;
+use common::id::Id;
 use console::Term;
-use lib::config::Config;
-use lib::net::client::Client;
-use lib::net::frame::Frame;
-use lib::net::packet::movement::Movement;
-use lib::net::packet::ping::Ping;
-use lib::net::packet::sync::Sync;
-use lib::net::packet::Packet;
-use lib::player::Id;
+use net::client::Client;
+use net::frame::Frame;
+use net::packet::movement::Movement;
+use net::packet::ping::Ping;
+use net::packet::sync::Sync;
+use net::packet::Packet;
 
 #[tokio::main]
 async fn main() {

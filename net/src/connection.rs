@@ -1,5 +1,5 @@
-use crate::net::frame::Frame;
-use crate::net::packet::Packet;
+use crate::frame::Frame;
+use crate::packet::Packet;
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::sync::mpsc::Sender;

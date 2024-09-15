@@ -1,4 +1,4 @@
-use crate::net::packet::Packet;
+use crate::packet::Packet;
 use tokio_util::bytes::BufMut;
 
 #[derive(Copy, Clone, Debug)]

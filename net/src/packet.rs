@@ -1,10 +1,10 @@
+use crate::packet::movement::Movement;
+use crate::packet::ping::Ping;
+use crate::packet::sync::Sync;
+
 pub mod movement;
 pub mod ping;
 pub mod sync;
-
-use crate::net::packet::movement::Movement;
-use crate::net::packet::ping::Ping;
-use crate::net::packet::sync::Sync;
 
 #[derive(Copy, Clone, Debug)]
 #[repr(u8)]

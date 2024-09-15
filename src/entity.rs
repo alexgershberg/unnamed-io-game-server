@@ -1,5 +1,6 @@
 use crate::physics::Velocity;
-use crate::player::{Id, Position};
+use crate::player::Position;
+use common::id::Id;
 
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Entity {

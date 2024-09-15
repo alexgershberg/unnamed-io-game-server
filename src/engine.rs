@@ -1,7 +1,8 @@
 use crate::entity::Entity;
-use crate::net::packet::Packet;
 use crate::physics::{Acceleration, Velocity};
-use crate::player::{Id, KeyboardInput, Player};
+use crate::player::{KeyboardInput, Player};
+use common::id::Id;
+use net::packet::Packet;
 use std::collections::HashMap;
 use std::thread;
 use std::time::Duration;

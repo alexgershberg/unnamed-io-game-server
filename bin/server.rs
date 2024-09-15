@@ -1,6 +1,6 @@
-use lib::config::Config;
+use common::config::Config;
 use lib::engine::Engine;
-use lib::net::server::Server;
+use net::server::Server;
 use std::sync::Arc;
 use tokio::sync::mpsc::channel;
 

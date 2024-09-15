@@ -1,20 +1,12 @@
 use crate::engine::TPS;
 use crate::physics::{Acceleration, Velocity};
+use common::id::Id;
 
 pub struct KeyboardInput {
     pub up: bool,
     pub down: bool,
     pub left: bool,
     pub right: bool,
-}
-
-#[derive(Copy, Clone, Debug, Default, Hash, Eq, PartialEq)]
-pub struct Id(pub u16);
-impl Id {
-    pub fn as_bytes(&self) -> [u8; size_of::<Id>()] {
-        let bytes = self.0.to_be_bytes();
-        [bytes[0], bytes[1]]
-    }
 }
 
 #[derive(Copy, Clone, Debug, Default)]
