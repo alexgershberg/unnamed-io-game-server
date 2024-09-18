@@ -1,13 +1,13 @@
 use console::Term;
 use lib::config::Config;
+use net::frame::Frame;
+use net::id::Id;
+use net::packet::movement::Movement;
+use net::packet::ping::Ping;
+use net::packet::sync::Sync;
+use net::packet::Packet;
 use std::net::{Ipv4Addr, SocketAddr};
 use tokio::net::UdpSocket;
-use wasm_net::frame::Frame;
-use wasm_net::id::Id;
-use wasm_net::packet::movement::Movement;
-use wasm_net::packet::Packet;
-use wasm_net::packet::ping::Ping;
-use wasm_net::packet::sync::Sync;
 
 pub struct Client {
     pub socket: UdpSocket,
