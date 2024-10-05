@@ -88,12 +88,14 @@ impl Default for Engine {
         Self {
             tps: TPS,
             players: {
-                let mut player = Player::default();
-                player.velocity = Velocity {
-                    x: 0.0,
-                    y: 0.0,
-                    max_x: 10.0,
-                    max_y: 10.0,
+                let player = Player {
+                    velocity: Velocity {
+                        x: 0.0,
+                        y: 0.0,
+                        max_x: 10.0,
+                        max_y: 10.0,
+                    },
+                    ..Default::default()
                 };
                 HashMap::from([(player.id, player)])
             },
